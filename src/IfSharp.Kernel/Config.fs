@@ -1,7 +1,8 @@
-﻿module Config
-
+﻿module IfSharp.Kernel.Config
 open System
 open System.Configuration
+open System.Diagnostics
+open System.Collections
 
 /// Convenience method for getting a setting with a default value
 let defaultConfig (name : string, defaultValue) =
@@ -10,3 +11,8 @@ let defaultConfig (name : string, defaultValue) =
 
 // the configuration properties
 let DefaultNuGetSource = defaultConfig("DefaultNuGetSource", "")
+
+let NuGetSources =
+    match ConfigurationManager.GetSection("NuGetSources") with
+    | null -> new Specialized.NameValueCollection()
+    | section -> section :?> Specialized.NameValueCollection

@@ -158,6 +158,10 @@ type NuGetManager (executingDirectory : string) =
                     installer.Version <- version
                 if not (String.IsNullOrWhiteSpace(packageSource)) then
                     installer.Source.Add(packageSource)
+                for source in Config.NuGetSources.AllKeys do
+                    let uri = Config.NuGetSources.[source]
+                    if not (String.IsNullOrWhiteSpace(uri)) then
+                        installer.Source.Add(uri)
 
                 // install
                 let executeResults = 
