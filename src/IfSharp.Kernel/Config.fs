@@ -10,3 +10,5 @@ let defaultConfig (name : string, defaultValue) =
 
 // the configuration properties
 let DefaultNuGetSource = defaultConfig("DefaultNuGetSource", "")
+
+let LoadNuGetPackageAssemblies = Boolean.Parse(defaultConfig("LoadNuGetPackageAssemblies", "True"))

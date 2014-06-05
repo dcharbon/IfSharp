@@ -176,12 +176,23 @@ type IfSharpKernel(connectionInformation : ConnectionInformation, ioSocket : Soc
                 pyout ("NuGet error: " + package.Error)
             else
                 pyout ("NuGet package: " + package.Package.Value.Id)
-                for assembly in package.Assemblies do
-                    let fullAssembly = compiler.NuGetManager.GetFullAssemblyPath(package, assembly)
-                    pyout ("Referenced: " + fullAssembly)
+                if Config.LoadNuGetPackageAssemblies then
+                    for assembly in package.Assemblies do
+                        let fullAssembly = compiler.NuGetManager.GetFullAssemblyPath(package, assembly)
+                        pyout ("Referenced: " + fullAssembly)
 
-                    let code = String.Format(@"#r @""{0}""", fullAssembly)
-                    fsiEval.EvalInteraction(code)
+                        let code = String.Format(@"#r @""{0}""", fullAssembly)
+                        fsiEval.EvalInteraction(code)
+                else
+                    // collect unique directories
+                    let libdirs = 
+                        package.Assemblies
+                        |> Seq.map (fun assembly -> Path.GetDirectoryName(compiler.NuGetManager.GetFullAssemblyPath(package, assembly)))
+                        |> Seq.distinct
+                    // add them to the search path
+                    for dir in libdirs do
+                        let code = String.Format(@"#I @""{0}""", dir)
+                        fsiEval.EvalInteraction(code)
 
         if not <| String.IsNullOrEmpty(newCode) then
             fsiEval.EvalInteraction(newCode)
@@ -354,6 +365,7 @@ type IfSharpKernel(connectionInformation : ConnectionInformation, ioSocket : Soc
 
         try
             Thread.Sleep(10000)
+            Debugger.Launch()
             preprocessAndEval headerCode
         with
         | exn -> handleException exn
